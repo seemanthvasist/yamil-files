@@ -1,12 +1,12 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Release.Name }}-mongodb
+  name: {{ .Release.Name }}-mongodb-service
   namespace: {{ .Values.namespace }}
 spec:
   selector:
-    app: {{ .Values.deployment.labels.app }}
+    app: {{ .Values.statefulset.labels.app }}
   ports:
-    - port: {{ .Values.service.port }}
-      targetPort: {{ .Values.deployment.port }}
-      protocol: {{ .Values.service.protocol }}
+    - port: {{ .Values.statefulset.containers.port }}
+      targetPort: {{ .Values.statefulset.containers.port }}
+      protocol: TCP

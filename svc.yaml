@@ -5,9 +5,9 @@ metadata:
   namespace: {{ .Values.namespace }}
 spec:
   selector:
-    app: {{ .Values.service.app }}
+    app: {{ .Values.deployment.labels.app }}
   ports:
     - protocol: TCP
-      port: {{ .Values.service.port }}
+      port: {{ .Values.deployment.port }}
       targetPort: {{ .Values.deployment.port }}
   type: {{ .Values.service.type }}

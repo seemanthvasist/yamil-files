@@ -1,7 +1,7 @@
 
 namespace: vasist-ns
 
-# retail-app deployment values
+# veg-app deployment values
 
 replicas: 4
 deployment:
@@ -29,18 +29,6 @@ configmap:
     MONGODB_URI: "mongodb://mongodb:27017/vegetable_order_app"
     PORT: "3000"
     MONGO_INITDB_DATABASE: "myDatabase"
-
-# deployment values
-
-replicas: 4
-deployment:
-  labels:
-    app: vegetable
-  name: vegetable-container
-  port: 3130
-image:
-  repository: saiteja2502/userprofilevegetable
-  tag: latest
 
 # pvc values
 

@@ -18,5 +18,11 @@ spec:
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         ports:
         - containerPort: {{ .Values.deployment.port }}
+        env:
+        - name: {{ .Values.deployment.env.name }}
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Values.deployment.image.env.configMapKeyRef }}
+              key: {{ .Values.deployment.image.env.key }}
 
         
