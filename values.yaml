@@ -1,95 +1,88 @@
-
 namespace: vasist-ns
 
-# veg-app deployment values
+#configmap details
+configmap:
+  data:
+    MONGO_URI: "mongodb://mongodb:27017/vegetable_order_app"
+    MONGO_INITDB_DATABASE: "vegetable_order_app"
 
-replicas: 4
+#deployment details
+replicas: 2
 deployment:
+  name: vegetable-order-app-deployment
   labels:
-    app: veg
-  name: veg-container
-  port: 3130
+    app: vegetable-order-app
+  port:  3000
 image:
-  repository: saiteja2502/userprofileretail
-  tag: latest
+    repository: rithika17/vegetable-order-app
+    tag: v1.0.0
+    env:
+      - name: MONGODB_URI
+        configMapKeyRef: vegetable-app-config
+        key: MONGO_URI
 
-# retail-app svc values
+#service details
 
 service:
-  app: veg
-  port: 80
+  app: vegetable-order-app
   type: LoadBalancer
+  port: 3000
 
-# configmap values
 
-configmap:
-  name: configmap
-  namespace: vasist-ns
-  data:
-    MONGODB_URI: "mongodb://mongodb:27017/vegetable_order_app"
-    PORT: "3000"
-    MONGO_INITDB_DATABASE: "myDatabase"
+#mongodb statefulset details
 
-# pvc values
 
+statefulset:  
+  name: mongodb
+  replicas: 2
+  serviceName: "mongodb"
+  labels:
+    app: mongodb
+  containers:
+    name: mongodb
+    image: mongo:latest
+    port: 27017
+    volumeMounts:
+      - name: mongodb-data
+        mountPath: /data/db
+    env:
+      - name: MONGO_INITDB_DATABASE
+        configMapKeyRef: vegetable-app-config
+        key: MONGO_INITDB_DATABASE
+  volumeClaims:
+    - name: mongodb-data
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: veg-sc
+      storage: 1Gi
+
+#mongodb service details
+
+mongodbService:
+  name: mongodb-service
+  port: 27017
+
+#pvc details
 pvc:
-  name: pvc
-  namespace: vasist-ns
-  accessModes:
+  storageClassName: veg-sc
+  accessModes: 
     - ReadWriteOnce
   resources:
     requests:
       storage: 2Gi
 
-# statefull-deployment values
-
-replicas: 5
-serviceName: "mongodb"
-selector:
-  matchLabels:
+#headless service details
+headless:
+  selector:
     app: mongodb
-template:
-  metadata:
-    labels:
-      app: mongodb
-  spec:
-    containers:
-    - name: mongodb
-      image: mongo:latest
-      ports:
-      - containerPort: 27017
-      env:
-        - name: MONGO_INITDB_DATABASE
-          valueFrom:
-            configMapKeyRef:
-              name: configmap
-              key: MONGO_INITDB_DATABASE
-volumeClaimTemplates:  # it is referencing pvc automatically instead of refering pvc manually in the pod or yaml file
-  - metadata: 
-      name: mongo-data
-    spec:
-      accessModes:
-        - ReadWriteOnce
-      resources:
-        requests:
-          storage: 2Gi
-
-# headleass-svc values
-
-service:
-  app: mongodb
   port: 27017
-  type: ClusterIP
+  targetPort: 27017
+  clusterIP: None
 
-# storage-class values
-
-storageClassName: veg-sc
-provisioner: kubernetes.io/aws-ebs
-reclaimPolicy: Retain
-volumeBindingMode: WaitForFirstConsumer
-
-#mongodb-service values
-
-service:
-  app: mongodb
-  port: 27017
+#storage class details
+storageClass:
+  name: veg-sc
+  provisioner: ebs.csi.aws.com
+  reclaimPolicy: Retain
+  volumeBindingMode: WaitForFirstConsumer
+  parameters:
+    type: gp3
