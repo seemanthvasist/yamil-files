@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Release.Name }}-mongodb
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: {{ .Values.replicas }}
+  serviceName: {{ .Release.Name }}-mongodb
+  selector:
+    matchLabels:
+      app: {{.Values.deployment.labels.app}}
+  template:
+    metadata:
+      labels:
+        app: {{.Values.deployment.labels.app}}
+    spec:
+      containers:
+      - name: {{ .Values.deployment.name }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        ports:
+        - containerPort: {{ .Values.deployment.port }}
+        volumeMounts:
+        - name: {{ .Release.Name }}-mongo-data
+          mountPath: {{ .Values.mountPath }}
+        env:
+          - name: {{ .Values.env.name }}
+            valueFrom:
+              configMapKeyRef:
+                name: {{ .Release.Name }}-config
+                key: {{ .Values.env.key }}
+  volumeClaimTemplates:  # it is referencing pvc automatically instead of refering pvc manually in the pod or yaml file
+    - metadata:
+        name: {{ .Release.Name }}-mongo-data
+      spec:
+        accessModes: {{ .Values.pvc.accessModes }}
+        storageClassName: {{ .Values.pvc.storageClassName }}
+        resources:
+          requests:
+            storage: {{ .Values.pvc.storage }}

@@ -1,0 +1,107 @@
+
+namespace: vasist-ns
+
+# retail-app deployment values
+
+replicas: 4
+deployment:
+  labels:
+    app: retail
+  name: retail-container
+  port: 3130
+image:
+  repository: saiteja2502/userprofileretail
+  tag: latest
+
+# retail-app svc values
+
+service:
+  app: retail
+  port: 80
+  type: LoadBalancer
+
+# configmap values
+
+configmap:
+  name: configmap
+  namespace: vasist-ns
+  data:
+    MONGODB_URI: "mongodb://mongodb:27017/vegetable_order_app"
+    PORT: "3000"
+    MONGO_INITDB_DATABASE: "myDatabase"
+
+# deployment values
+
+replicas: 4
+deployment:
+  labels:
+    app: vegetable
+  name: vegetable-container
+  port: 3130
+image:
+  repository: saiteja2502/userprofilevegetable
+  tag: latest
+
+# pvc values
+
+pvc:
+  name: pvc
+  namespace: vasist-ns
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+
+# statefull-deployment values
+
+replicas: 5
+serviceName: "mongodb"
+selector:
+  matchLabels:
+    app: mongodb
+template:
+  metadata:
+    labels:
+      app: mongodb
+  spec:
+    containers:
+    - name: mongodb
+      image: mongo:latest
+      ports:
+      - containerPort: 27017
+      env:
+        - name: MONGO_INITDB_DATABASE
+          valueFrom:
+            configMapKeyRef:
+              name: configmap
+              key: MONGO_INITDB_DATABASE
+volumeClaimTemplates:  # it is referencing pvc automatically instead of refering pvc manually in the pod or yaml file
+  - metadata: 
+      name: mongo-data
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 2Gi
+
+# headleass-svc values
+
+service:
+  app: mongodb
+  port: 27017
+  type: ClusterIP
+
+# storage-class values
+
+storageClassName: veg-sc
+provisioner: kubernetes.io/aws-ebs
+reclaimPolicy: Retain
+volumeBindingMode: WaitForFirstConsumer
+
+#mongodb-service values
+
+service:
+  app: mongodb
+  port: 27017
