@@ -6,8 +6,8 @@ namespace: vasist-ns
 replicas: 4
 deployment:
   labels:
-    app: retail
-  name: retail-container
+    app: veg
+  name: veg-container
   port: 3130
 image:
   repository: saiteja2502/userprofileretail
@@ -16,7 +16,7 @@ image:
 # retail-app svc values
 
 service:
-  app: retail
+  app: veg
   port: 80
   type: LoadBalancer
 
